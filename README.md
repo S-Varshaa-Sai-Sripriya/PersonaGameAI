@@ -4,6 +4,11 @@ Dynamic AI Adaptation through Dual-Policy Reinforcement Learning
 
 In the realm of artificial intelligence for interactive systems, creating agents that can dynamically adapt to user behavior is a critical challenge. While the visual representation of PersonaGameAI is intentionally minimalist—featuring a simple 2D environment with a player and an AI agent—its core purpose is to serve as a focused and clear demonstration platform for a novel approach to adaptive game AI. This project tackles the fundamental problem of static, predictable Non-Player Characters (NPCs) by introducing an AI that intelligently shifts its strategic "persona" in real-time, offering a glimpse into a future of truly personalized and engaging digital interactions.
 
+
+https://github.com/user-attachments/assets/369a733c-6881-49bb-b689-34d3539c14fe
+
+
+
 Table of Contents
 
     Introduction
