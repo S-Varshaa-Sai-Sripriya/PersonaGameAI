@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PersonaGameAI Web Demo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for Inter font and general styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Dark background */
+            color: #e2e8f0; /* Light text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        canvas {
+            background-color: #2d3748; /* Darker grey for canvas */
+            border-radius: 12px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5);
+            display: block; /* Remove extra space below canvas */
+            touch-action: none; /* Prevent default touch actions like scrolling/zooming */
+        }
+        .info-panel, .controls {
+            background-color: #2d3748;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .control-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.2s, transform 0.1s;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .control-button:hover {
+            background-color: #6a7a90;
+            transform: translateY(-1px);
+        }
+        .control-button:active {
+            background-color: #3e4857;
+            transform: translateY(1px);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            canvas {
+                width: 100%;
+                max-width: 400px; /* Limit canvas width on smaller screens */
+                height: auto; /* Maintain aspect ratio */
+            }
+            .info-panel, .controls {
+                width: 100%;
+                max-width: 400px;
+            }
+            .button-group {
+                flex-wrap: wrap; /* Wrap buttons on small screens */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 flex flex-col items-center justify-center min-h-screen p-5">
+
+    <h1 class="text-4xl font-bold mb-6 text-blue-400">PersonaGameAI Web Demo</h1>
+
+    <div class="info-panel w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mb-6">
+        <p class="text-lg mb-2">AI Persona: <span id="aiPersona" class="font-semibold text-green-400">Loading...</span></p>
+        <p class="text-sm text-gray-400">
+            (AI adapts its goal based on your movement:
+            <br>Consistently close -> AI becomes Evasive
+            <br>Consistently far -> AI becomes Aggressive)
+        </p>
+    </div>
+
+    <canvas id="gameCanvas" width="500" height="500" class="rounded-xl"></canvas>
+
+    <div class="controls w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mt-6">
+        <h2 class="text-xl font-semibold mb-4">Player Controls (Use Arrow Keys or Buttons)</h2>
+        <div class="button-group">
+            <button id="upButton" class="control-button">Up</button>
+            <button id="leftButton" class="control-button">Left</button>
+            <button id="downButton" class="control-button">Down</button>
+            <button id="rightButton" class="control-button">Right</button>
+        </div>
+        <button id="resetButton" class="control-button mt-4 w-full bg-red-600 hover:bg-red-700">Reset Game</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Constants from Python config (hardcoded for simplicity in JS)
+        const PLAYER_SIZE = 20;
+        const AI_SIZE = 20;
+        const SPEED = 1; // This speed is for rendering, actual movement handled by backend
+
+        let playerPos = { x: 0, y: 0 };
+        let aiPos = { x: 0, y: 0 };
+        let aiPersona = 'aggressive'; // Default, will be updated by backend
+
+        const aiPersonaDisplay = document.getElementById('aiPersona');
+
+        // Mapping of actions to keys/buttons for sending to backend
+        const ACTIONS_MAP = {
+            'ArrowUp': 1,    // Up
+            'ArrowDown': 2,  // Down
+            'ArrowLeft': 3,  // Left
+            'ArrowRight': 4, // Right
+            // Corresponding button IDs to action indices
+            'upButton': 1,
+            'downButton': 2,
+            'leftButton': 3,
+            'rightButton': 4
+        };
+
+        // Define the base URL for your Flask backend
+        // IMPORTANT: If running Flask on a different host or port, update this.
+        // Also, ensure your 'app.py' Flask server is running in your terminal
+        // before opening this HTML page in your browser.
+        const FLASK_BASE_URL = 'http://127.0.0.1:5000';
+
+        // --- Drawing Function ---
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Player (Blue)
+            ctx.fillStyle = '#4299e1';
+            ctx.fillRect(playerPos.x, playerPos.y, PLAYER_SIZE, PLAYER_SIZE);
+
+            // Draw AI (Green for aggressive, Purple for evasive)
+            ctx.fillStyle = aiPersona === 'aggressive' ? '#38a169' : '#805ad5';
+            ctx.fillRect(aiPos.x, aiPos.y, AI_SIZE, AI_SIZE);
+        }
+
+        // --- Communication with Backend ---
+        async function fetchGameState() {
+            try {
+                // Use the absolute URL for the Flask endpoint
+                const response = await fetch(`${FLASK_BASE_URL}/get_initial_state`);
+                const data = await response.json();
+                playerPos = data.player_pos;
+                aiPos = data.ai_pos;
+                aiPersona = data.ai_persona;
+                aiPersonaDisplay.textContent = aiPersona.charAt(0).toUpperCase() + aiPersona.slice(1);
+                aiPersonaDisplay.className = `font-semibold ${aiPersona === 'aggressive' ? 'text-green-400' : 'text-purple-400'}`;
+                drawGame();
+            } catch (error) {
+                console.error('Error fetching initial game state: Network error. Please ensure your Flask server (app.py) is running and accessible at ' + FLASK_BASE_URL, error);
+            }
+        }
+
+        async function sendPlayerMove(action_idx) {
+            try {
+                // Use the absolute URL for the Flask endpoint
+                const response = await fetch(`${FLASK_BASE_URL}/move_player`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action_idx: action_idx })
+                });
+                const data = await response.json();
+                playerPos = data.player_pos;
+                aiPos = data.ai_pos;
+                aiPersona = data.ai_persona;
+                aiPersonaDisplay.textContent = aiPersona.charAt(0).toUpperCase() + aiPersona.slice(1);
+                aiPersonaDisplay.className = `font-semibold ${aiPersona === 'aggressive' ? 'text-green-400' : 'text-purple-400'}`;
+                drawGame();
+            } catch (error) {
+                console.error('Error sending player move:', error);
+            }
+        }
+
+        async function sendResetGame() {
+            try {
+                // Use the absolute URL for the Flask endpoint
+                const response = await fetch(`${FLASK_BASE_URL}/reset_game`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                playerPos = data.player_pos;
+                aiPos = data.ai_pos;
+                aiPersona = data.ai_persona;
+                aiPersonaDisplay.textContent = aiPersona.charAt(0).toUpperCase() + aiPersona.slice(1);
+                aiPersonaDisplay.className = `font-semibold ${aiPersona === 'aggressive' ? 'text-green-400' : 'text-purple-400'}`;
+                drawGame();
+            } catch (error) {
+                console.error('Error resetting game:', error);
+            }
+        }
+
+        // --- Event Listeners ---
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (ACTIONS_MAP.hasOwnProperty(e.key)) {
+                sendPlayerMove(ACTIONS_MAP[e.key]);
+                e.preventDefault(); // Prevent default scroll behavior for arrow keys
+            }
+        });
+
+        // Button controls (for touch/click)
+        document.getElementById('upButton').addEventListener('click', () => sendPlayerMove(ACTIONS_MAP['upButton']));
+        document.getElementById('downButton').addEventListener('click', () => sendPlayerMove(ACTIONS_MAP['downButton']));
+        document.getElementById('leftButton').addEventListener('click', () => sendPlayerMove(ACTIONS_MAP['leftButton']));
+        document.getElementById('rightButton').addEventListener('click', () => sendPlayerMove(ACTIONS_MAP['rightButton']));
+        document.getElementById('resetButton').addEventListener('click', sendResetGame);
+
+        // Initial setup
+        window.onload = fetchGameState;
+    </script>
+</body>
+</html>
