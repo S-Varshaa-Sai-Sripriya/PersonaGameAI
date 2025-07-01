@@ -4,10 +4,6 @@ Dynamic AI Adaptation through Dual-Policy Reinforcement Learning
 
 In the realm of artificial intelligence for interactive systems, creating agents that can dynamically adapt to user behavior is a critical challenge. While the visual representation of PersonaGameAI is intentionally minimalist—featuring a simple 2D environment with a player and an AI agent—its core purpose is to serve as a focused and clear demonstration platform for a novel approach to adaptive game AI. This project tackles the fundamental problem of static, predictable Non-Player Characters (NPCs) by introducing an AI that intelligently shifts its strategic "persona" in real-time, offering a glimpse into a future of truly personalized and engaging digital interactions.
 
-
-https://github.com/user-attachments/assets/fb86048a-98cf-48cd-828d-1054d9facf0a
-
-
 Table of Contents
 
     Introduction
@@ -112,22 +108,109 @@ Advantages
 
     Enhanced Robustness: The system can gracefully handle rapid shifts in player strategy by switching to an already trained, appropriate policy.
 
-### Comparison to Traditional Q-Learning
+Comparison to Traditional Q-Learning
 
-| Feature            | Traditional Q-Learning (with Persona Reset) | Dual-Policy Learning (PersonaGameAI)      |
-| :----------------- | :------------------------------------------ | :---------------------------------------- |
-| **Q-Table Management** | Single Q-table, reset on persona change     | Multiple Q-tables (one per persona), persistent |
-| **Learning Retention** | Forgets previous persona's learning         | Retains learned policies for all personas |
-| **Adaptation Speed** | Slower (re-learns each time)                | Faster (switches to existing policy)      |
-| **Behavior Coherence** | Can be inconsistent during re-learning      | Highly coherent within each active persona |
-| **Complexity** | Simpler to implement initially              | Slightly more complex state management    |
-| **Scalability** | Limited for diverse, dynamic goals          | Highly scalable for multiple, distinct goals |
+Feature
+	
 
+Traditional Q-Learning (with Persona Reset)
+	
+
+Dual-Policy Learning (PersonaGameAI)
+
+Q-Table Management
+	
+
+Single Q-table, reset on persona change
+	
+
+Multiple Q-tables (one per persona), persistent
+
+Learning Retention
+	
+
+Forgets previous persona's learning
+	
+
+Retains learned policies for all personas
+
+Adaptation Speed
+	
+
+Slower (re-learns each time)
+	
+
+Faster (switches to existing policy)
+
+Behavior Coherence
+	
+
+Can be inconsistent during re-learning
+	
+
+Highly coherent within each active persona
+
+Complexity
+	
+
+Simpler to implement initially
+	
+
+Slightly more complex state management
+
+Scalability
+	
+
+Limited for diverse, dynamic goals
+	
+
+Highly scalable for multiple, distinct goals
 6. System Architecture
 
 PersonaGameAI is built with a modular architecture, promoting separation of concerns and maintainability.
+Flowchart
 
-Explanation of Workflow:
+graph TD
+    subgraph Frontend (Browser)
+        A[index.html (HTML/JS)]
+    end
+
+    subgraph Backend (Flask App)
+        B[app.py (Flask)]
+    end
+
+    subgraph Core Logic (Python Modules)
+        C[GameEnvironment]
+        D[RLAgent]
+        E[PersonaManager]
+        F[config.py]
+    end
+
+    A -- HTTP Request (GET /get_initial_state) --> B
+    A -- HTTP Request (POST /move_player) --> B
+    A -- HTTP Request (POST /reset_game) --> B
+
+    B -- Updates Game State --> C
+    B -- Calls AI Logic --> E
+    B -- Calls AI Logic --> D
+
+    E -- Determines current persona --> D
+    E -- Triggers persona change --> D (influences Q-table selection)
+
+    D -- Gets state from --> C
+    D -- Takes action, updates --> C
+    D -- Updates Q-tables based on persona --> D (internal)
+
+    C -- Provides Game State --> D
+    C -- Provides Game State --> E
+
+    F -- Provides Constants to --> C
+    F -- Provides Constants to --> D
+    F -- Provides Constants to --> E
+
+    B -- Returns JSON State --> A
+
+Explanation of Flow:
 
     Frontend (Browser): The index.html page (HTML/JavaScript) is loaded in the user's browser. It renders the game board and provides interactive controls (keyboard/buttons).
 
@@ -195,7 +278,6 @@ Web Integration (Flask)
 8. Getting Started
 
 Follow these steps to set up and run the PersonaGameAI project.
-
 Prerequisites
 
     Python 3.9+ (Python 3.11 or 3.10 recommended for broader library compatibility if extending beyond Flask)
@@ -249,29 +331,42 @@ For a quick, text-based demonstration of the core RL and persona adaptation logi
 
     Observe the text-based grid and AI persona changes in your terminal. You can adjust NUM_SIMULATION_STEPS in config.py to run for more turns.
 
+9. Project Structure
+
+PersonaGameAI/
+├── app.py                  # Flask web application entry point
+├── config.py               # Global constants and parameters
+├── game_env.py             # Manages game state, entity movement, and rendering
+├── main.py                 # Console simulation entry point
+├── persona_manager.py      # Handles AI persona adaptation logic
+├── rl_agent.py             # Implements the Dual-Policy Q-Learning agent
+├── requirements.txt        # Python project dependencies
+└── templates/
+    └── index.html          # Web frontend for the interactive demo
+
 10. Future Enhancements & Scalability
 
 To evolve PersonaGameAI into a production-grade, MAANG-level system, consider these advanced enhancements:
 
-    1.  Deep Reinforcement Learning (DQN/PPO): Replace tabular Q-learning with neural networks (e.g., using TensorFlow or PyTorch) to handle larger, more complex state spaces and enable better generalization. This would be a natural progression from the current dual-policy tabular approach.
+    Deep Reinforcement Learning (DQN/PPO): Replace tabular Q-learning with neural networks (e.g., using TensorFlow or PyTorch) to handle larger, more complex state spaces and enable better generalization. This would be a natural progression from the current dual-policy tabular approach.
 
-    2. Advanced Player Profiling: Implement machine learning models (e.g., clustering, classification) to analyze player telemetry (movement, actions, engagement) and infer more nuanced player "archetypes" beyond simple proximity. This would feed into more sophisticated persona selection.
+    Advanced Player Profiling: Implement machine learning models (e.g., clustering, classification) to analyze player telemetry (movement, actions, engagement) and infer more nuanced player "archetypes" beyond simple proximity. This would feed into more sophisticated persona selection.
 
-    3. Hierarchical RL for Persona Selection: Train a higher-level RL agent to learn when to switch between aggressive and evasive policies, optimizing persona transitions based on long-term game objectives.
+    Hierarchical RL for Persona Selection: Train a higher-level RL agent to learn when to switch between aggressive and evasive policies, optimizing persona transitions based on long-term game objectives.
 
-    4. Continuous Action Spaces: For more fluid movement or complex actions, explore DRL algorithms that handle continuous action spaces (e.g., DDPG, SAC).
+    Continuous Action Spaces: For more fluid movement or complex actions, explore DRL algorithms that handle continuous action spaces (e.g., DDPG, SAC).
 
-    5. Game Engine Integration: Integrate the Python AI logic with popular game engines like Unity (via ML-Agents) or Unreal Engine, allowing for development of full-fledged 3D game environments.
+    Game Engine Integration: Integrate the Python AI logic with popular game engines like Unity (via ML-Agents) or Unreal Engine, allowing for development of full-fledged 3D game environments.
 
-    6. Distributed Training: For complex DRL agents, leverage frameworks like Ray RLlib or OpenAI Baselines for distributed training across multiple machines or GPUs, significantly accelerating learning.
+    Distributed Training: For complex DRL agents, leverage frameworks like Ray RLlib or OpenAI Baselines for distributed training across multiple machines or GPUs, significantly accelerating learning.
 
-    7. Persistence & Model Serving: Implement robust mechanisms to save and load learned Q-tables (or neural network weights) and serve them efficiently for real-time inference in a game.
+    Persistence & Model Serving: Implement robust mechanisms to save and load learned Q-tables (or neural network weights) and serve them efficiently for real-time inference in a game.
 
-    8. Multi-Agent Interaction: Extend the framework to support multiple adaptive AI agents interacting with each other and the player, leading to emergent complex behaviors.
+    Multi-Agent Interaction: Extend the framework to support multiple adaptive AI agents interacting with each other and the player, leading to emergent complex behaviors.
 
-    9. Comprehensive Telemetry & Analytics: Implement robust logging and data collection pipelines to gather insights into AI performance, player engagement, and persona effectiveness.
+    Comprehensive Telemetry & Analytics: Implement robust logging and data collection pipelines to gather insights into AI performance, player engagement, and persona effectiveness.
 
-    10. Containerization & Orchestration: Package the Flask application and core logic using Docker and deploy with Kubernetes for scalable, resilient, and portable deployment.
+    Containerization & Orchestration: Package the Flask application and core logic using Docker and deploy with Kubernetes for scalable, resilient, and portable deployment.
 
 11. Contributing
 

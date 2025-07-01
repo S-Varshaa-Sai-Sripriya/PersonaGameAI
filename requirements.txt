@@ -1,0 +1,9 @@
+Flask
+tensorflow[and-cuda]
+torch
+numpy
+pandas
+pygame
+scikit-learn
+pyglet
+pytest
