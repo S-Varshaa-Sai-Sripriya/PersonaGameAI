@@ -194,64 +194,8 @@ Web Integration (Flask)
 
     The frontend JavaScript uses fetch API calls to communicate with these Flask endpoints, updating the HTML5 Canvas accordingly.
 
-8. Getting Started
 
-Follow these steps to set up and run the PersonaGameAI project.
-
-Prerequisites
-
-    Python 3.9+ (Python 3.11 or 3.10 recommended for broader library compatibility if extending beyond Flask)
-
-    pip (Python package installer)
-
-Installation
-
-    Clone the repository:
-
-    git clone https://github.com/S-Varshaa-Sai-Sripriya/PersonaGameAI.git
-    cd PersonaGameAI
-
-    Create and activate a Python virtual environment:
-    This isolates your project's dependencies from your system's Python installation.
-
-    python -m venv venv
-    # On Windows:
-    .\venv\Scripts\activate
-    # On macOS/Linux:
-    source venv/bin/activate
-
-    Install dependencies:
-
-    pip install -r requirements.txt
-
-Running the Web Demo
-
-    Start the Flask backend server:
-
-    python app.py
-
-    You should see output indicating the server is running, typically on http://127.0.0.1:5000.
-
-    Open the web application in your browser:
-    Navigate to http://127.0.0.1:5000/ in your web browser.
-
-        Important: Do NOT open the templates/index.html file directly from your file system (file://...). It must be served by the Flask application.
-
-    Interact: Use the on-screen buttons or your keyboard arrow keys to move the blue player square. Observe how the green/purple AI square adapts its behavior.
-
-Running the Console Simulation
-
-For a quick, text-based demonstration of the core RL and persona adaptation logic without the web interface:
-
-    Ensure your virtual environment is active.
-
-    Run the main simulation script:
-
-    python main.py
-
-    Observe the text-based grid and AI persona changes in your terminal. You can adjust NUM_SIMULATION_STEPS in config.py to run for more turns.
-
-10. Future Enhancements & Scalability
+8. Future Enhancements & Scalability
 
 To evolve PersonaGameAI into a production-grade, MAANG-level system, consider these advanced enhancements:
 
@@ -275,23 +219,4 @@ To evolve PersonaGameAI into a production-grade, MAANG-level system, consider th
 
     10. Containerization & Orchestration: Package the Flask application and core logic using Docker and deploy with Kubernetes for scalable, resilient, and portable deployment.
 
-11. Contributing
-
-Contributions are welcome! If you have suggestions for improvements, new features, or bug fixes, please feel free to:
-
-    Fork the repository.
-
-    Create a new branch (git checkout -b feature/YourFeature).
-
-    Make your changes.
-
-    Commit your changes (git commit -m 'Add Your Feature').
-
-    Push to the branch (git push origin feature/YourFeature).
-
-    Open a Pull Request.
-
-12. License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
 
